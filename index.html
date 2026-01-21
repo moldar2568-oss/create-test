@@ -1,0 +1,472 @@
+<!doctype html>
+<html lang="ja">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>模擬テスト生成サポート</title>
+    <style>
+      :root {
+        color-scheme: light;
+        --bg: #f6f7fb;
+        --panel: #ffffff;
+        --text: #1f2430;
+        --muted: #5b6272;
+        --accent: #3b6ff6;
+        --border: #e0e4ef;
+      }
+      * {
+        box-sizing: border-box;
+      }
+      body {
+        margin: 0;
+        font-family: "Segoe UI", "Hiragino Kaku Gothic ProN", "Noto Sans JP", sans-serif;
+        background: var(--bg);
+        color: var(--text);
+      }
+      header {
+        padding: 32px 24px 16px;
+        text-align: center;
+      }
+      header h1 {
+        margin: 0 0 8px;
+        font-size: 28px;
+      }
+      header p {
+        margin: 0;
+        color: var(--muted);
+      }
+      main {
+        max-width: 920px;
+        margin: 0 auto;
+        padding: 0 20px 40px;
+      }
+      .grid {
+        display: grid;
+        gap: 16px;
+      }
+      .panel {
+        background: var(--panel);
+        border: 1px solid var(--border);
+        border-radius: 12px;
+        padding: 20px;
+        box-shadow: 0 2px 8px rgba(31, 36, 48, 0.06);
+      }
+      .panel h2 {
+        margin: 0 0 12px;
+        font-size: 18px;
+      }
+      label {
+        display: block;
+        font-size: 13px;
+        color: var(--muted);
+        margin-bottom: 6px;
+      }
+      input,
+      select,
+      textarea {
+        width: 100%;
+        padding: 10px 12px;
+        border-radius: 8px;
+        border: 1px solid var(--border);
+        font-size: 14px;
+        background: #fff;
+      }
+      textarea {
+        min-height: 90px;
+      }
+      .row {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 12px;
+      }
+      .file-list {
+        margin: 8px 0 0;
+        padding-left: 18px;
+        color: var(--muted);
+        font-size: 13px;
+      }
+      .actions {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 12px;
+        margin-top: 16px;
+      }
+      button {
+        border: none;
+        background: var(--accent);
+        color: #fff;
+        padding: 10px 18px;
+        border-radius: 8px;
+        cursor: pointer;
+        font-size: 14px;
+      }
+      button.secondary {
+        background: #eef1ff;
+        color: var(--accent);
+      }
+      .note {
+        font-size: 12px;
+        color: var(--muted);
+        margin-top: 8px;
+      }
+      .alert {
+        margin-top: 10px;
+        padding: 10px 12px;
+        border-radius: 8px;
+        background: #fff7e6;
+        border: 1px solid #ffd27a;
+        color: #7a4a00;
+        font-size: 12px;
+      }
+      .error {
+        margin-top: 10px;
+        padding: 10px 12px;
+        border-radius: 8px;
+        background: #fff1f1;
+        border: 1px solid #f5b2b2;
+        color: #8b1a1a;
+        font-size: 12px;
+      }
+      .result-links a {
+        display: inline-block;
+        margin-right: 10px;
+        margin-top: 6px;
+        color: var(--accent);
+      }
+      .summary {
+        background: #f1f5ff;
+        border-radius: 10px;
+        padding: 16px;
+        font-size: 13px;
+        color: var(--text);
+        line-height: 1.6;
+      }
+      .summary strong {
+        color: var(--accent);
+      }
+      .tag {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        padding: 6px 10px;
+        border-radius: 999px;
+        background: #eef1ff;
+        color: var(--accent);
+        font-size: 12px;
+        margin-right: 6px;
+        margin-top: 6px;
+      }
+      .table {
+        width: 100%;
+        border-collapse: collapse;
+        font-size: 13px;
+      }
+      .table th,
+      .table td {
+        border: 1px solid var(--border);
+        padding: 8px 10px;
+        text-align: left;
+      }
+      .table th {
+        background: #f7f8ff;
+      }
+      .steps {
+        display: grid;
+        gap: 10px;
+      }
+      .step {
+        padding: 12px;
+        border: 1px dashed var(--border);
+        border-radius: 10px;
+        font-size: 13px;
+        color: var(--muted);
+        background: #fbfcff;
+      }
+      .status {
+        font-weight: 600;
+        color: var(--accent);
+        margin-left: 6px;
+      }
+    </style>
+  </head>
+  <body>
+    <header>
+      <h1>模擬テスト生成サポート</h1>
+      <p>過去テストPDFと問題集PDFを整理し、模擬テスト作成の下準備を行います。</p>
+    </header>
+    <main class="grid">
+      <section class="panel">
+        <h2>入力情報</h2>
+        <div class="row">
+          <div>
+            <label for="school">中学校名</label>
+            <input id="school" type="text" placeholder="例: ○○市立○○中学校" />
+          </div>
+          <div>
+            <label for="grade">学年</label>
+            <select id="grade">
+              <option value="">選択してください</option>
+              <option value="中1">中1</option>
+              <option value="中2">中2</option>
+              <option value="中3">中3</option>
+            </select>
+          </div>
+          <div>
+            <label for="term">学期</label>
+            <select id="term">
+              <option value="">選択してください</option>
+              <option value="1学期中間">1学期中間</option>
+              <option value="1学期期末">1学期期末</option>
+              <option value="2学期中間">2学期中間</option>
+              <option value="2学期期末">2学期期末</option>
+              <option value="3学期学年末">3学期学年末</option>
+            </select>
+          </div>
+          <div>
+            <label for="publisher">準拠</label>
+            <select id="publisher">
+              <option value="">選択してください</option>
+              <option value="東京書籍">東京書籍</option>
+              <option value="光村図書">光村図書</option>
+              <option value="帝国書院">帝国書院</option>
+              <option value="数研出版">数研出版</option>
+              <option value="啓林館">啓林館</option>
+            </select>
+          </div>
+        </div>
+        <div style="margin-top: 12px;">
+          <label>対象教科（初期対応）</label>
+          <div>
+            <label class="tag"><input type="checkbox" id="subject-math" checked />数学</label>
+            <label class="tag"><input type="checkbox" id="subject-english" checked />英語</label>
+          </div>
+        </div>
+        <div style="margin-top: 12px;">
+          <label for="range">テスト範囲のページ</label>
+          <input id="range" type="text" placeholder="例: 教科書 p.12-45 / ワーク p.5-18" />
+        </div>
+      </section>
+
+      <section class="panel">
+        <h2>PDF保管ルール</h2>
+        <p class="note">
+          過去問PDFは <strong>past_tests_db/中学校名/学年/実施年_学期.pdf</strong> で保存されている前提で自動検索します。<br />
+          問題集PDFは <strong>problem_sets/準拠/questions/</strong> と <strong>problem_sets/準拠/answers/</strong> に分けて格納してください。
+        </p>
+        <div class="alert">
+          範囲ページは教科書ページ基準です。対応表が必要な場合は <strong>problem_sets/準拠/page_map.csv</strong> を用意してください。<br />
+          OCRが必要なスキャンPDFはバックエンド側で処理します。OCR環境の準備ができていない場合は、テキスト抽出のみで解析します。
+        </div>
+      </section>
+
+      <section class="panel">
+        <h2>出力イメージ</h2>
+        <div class="summary" id="summary">
+          <strong>入力待ち</strong>：条件を入力して「生成プレビュー」を押すと、模擬テストの構成案を表示します。
+        </div>
+        <div id="error-box" class="error" style="display: none;"></div>
+        <div class="actions">
+          <button id="preview">生成プレビュー</button>
+          <button id="analyze" class="secondary">分析開始</button>
+          <button id="generate" class="secondary">PDF生成</button>
+          <button id="reset" class="secondary">リセット</button>
+        </div>
+      </section>
+
+      <section class="panel">
+        <h2>分析結果</h2>
+        <div class="row">
+          <div>
+            <label>出題比率（例）</label>
+            <table class="table" id="ratio-table">
+              <thead>
+                <tr>
+                  <th>分野</th>
+                  <th>比率</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td colspan="2">分析待ち</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+          <div>
+            <label>難易度分析（例）</label>
+            <table class="table" id="difficulty-table">
+              <thead>
+                <tr>
+                  <th>難易度</th>
+                  <th>構成</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td colspan="2">分析待ち</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+        <p class="note">実運用では、過去テストPDFの設問タイプと配点を自動抽出して集計します。</p>
+      </section>
+
+      <section class="panel">
+        <h2>自動生成フロー</h2>
+        <div class="steps" id="flow-steps">
+          <div class="step">1. PDF読み込み（過去テスト + 問題集）<span class="status">待機</span></div>
+          <div class="step">2. OCR/レイアウト解析<span class="status">待機</span></div>
+          <div class="step">3. 出題傾向の抽出<span class="status">待機</span></div>
+          <div class="step">4. 範囲内問題の候補抽出<span class="status">待機</span></div>
+          <div class="step">5. A4縦レイアウト（表紙+問題+解答）<span class="status">待機</span></div>
+          <div class="step">6. 模擬テストPDF出力<span class="status">待機</span></div>
+        </div>
+        <div class="result-links" id="result-links"></div>
+      </section>
+    </main>
+
+    <script>
+      const byId = (id) => document.getElementById(id);
+
+      const summary = byId("summary");
+      const ratioTable = byId("ratio-table");
+      const difficultyTable = byId("difficulty-table");
+      const flowSteps = byId("flow-steps");
+      const errorBox = byId("error-box");
+      const resultLinks = byId("result-links");
+
+      const getSelectedSubjects = () => {
+        const subjects = [];
+        if (byId("subject-math").checked) subjects.push("数学");
+        if (byId("subject-english").checked) subjects.push("英語");
+        return subjects.length ? subjects.join("・") : "未選択";
+      };
+
+      const updateFlowStatus = (index, text) => {
+        const step = flowSteps.children[index];
+        if (!step) return;
+        const status = step.querySelector(".status");
+        if (status) status.textContent = text;
+      };
+
+      const setError = (message) => {
+        if (!message) {
+          errorBox.style.display = "none";
+          errorBox.textContent = "";
+          return;
+        }
+        errorBox.style.display = "block";
+        errorBox.textContent = message;
+      };
+
+      const getPayload = () => ({
+        school: byId("school").value.trim(),
+        grade: byId("grade").value,
+        term: byId("term").value,
+        publisher: byId("publisher").value,
+        range: byId("range").value.trim(),
+        subjects: getSelectedSubjects(),
+      });
+
+      byId("preview").addEventListener("click", () => {
+        const school = byId("school").value.trim() || "未入力";
+        const grade = byId("grade").value || "未入力";
+        const term = byId("term").value || "未入力";
+        const publisher = byId("publisher").value || "未入力";
+        const range = byId("range").value.trim() || "未入力";
+        const subjects = getSelectedSubjects();
+
+        summary.innerHTML = `
+          <strong>${school}</strong> / ${grade} / ${term}<br />
+          教科: ${subjects}<br />
+          準拠: ${publisher}<br />
+          範囲: ${range}<br />
+          <br />
+          次のステップ: 傾向分析で頻出形式を抽出し、範囲に合う問題をA4縦1枚ずつにレイアウトします。
+        `;
+      });
+
+      byId("analyze").addEventListener("click", async () => {
+        setError("");
+        updateFlowStatus(0, "処理中");
+        updateFlowStatus(1, "待機");
+        updateFlowStatus(2, "待機");
+        updateFlowStatus(3, "待機");
+        updateFlowStatus(4, "待機");
+        updateFlowStatus(5, "待機");
+        resultLinks.innerHTML = "";
+
+        try {
+          const res = await fetch("/api/analyze", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(getPayload()),
+          });
+          if (!res.ok) throw new Error("分析に失敗しました。PDFパスやサーバー設定を確認してください。");
+          const data = await res.json();
+
+          updateFlowStatus(0, "完了");
+          updateFlowStatus(1, data.ocr_status || "完了");
+          updateFlowStatus(2, "完了");
+          updateFlowStatus(3, "準備中");
+
+          ratioTable.querySelector("tbody").innerHTML = data.ratio
+            .map((row) => `<tr><td>${row.label}</td><td>${row.rate}%</td></tr>`)
+            .join("");
+          difficultyTable.querySelector("tbody").innerHTML = data.difficulty
+            .map((row) => `<tr><td>${row.level}</td><td>${row.detail}</td></tr>`)
+            .join("");
+        } catch (err) {
+          setError(err.message || "分析中にエラーが発生しました。");
+        }
+      });
+
+      byId("generate").addEventListener("click", async () => {
+        setError("");
+        updateFlowStatus(4, "生成中");
+        updateFlowStatus(5, "待機");
+        resultLinks.innerHTML = "";
+
+        try {
+          const res = await fetch("/api/generate", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(getPayload()),
+          });
+          if (!res.ok) throw new Error("PDF生成に失敗しました。");
+          const data = await res.json();
+          updateFlowStatus(4, "完了");
+          updateFlowStatus(5, "完了");
+
+          resultLinks.innerHTML = `
+            <a href="${data.questions_url}" target="_blank" rel="noreferrer">問題PDFを開く</a>
+            <a href="${data.answers_url}" target="_blank" rel="noreferrer">解答PDFを開く</a>
+          `;
+          summary.innerHTML = summary.innerHTML + "<br /><br />PDF生成が完了しました。リンクから確認できます。";
+        } catch (err) {
+          setError(err.message || "PDF生成中にエラーが発生しました。");
+        }
+      });
+
+      byId("reset").addEventListener("click", () => {
+        byId("school").value = "";
+        byId("grade").value = "";
+        byId("term").value = "";
+        byId("publisher").value = "";
+        byId("range").value = "";
+        byId("subject-math").checked = true;
+        byId("subject-english").checked = true;
+        summary.innerHTML = "<strong>入力待ち</strong>：条件を入力して「生成プレビュー」を押すと、模擬テストの構成案を表示します。";
+        ratioTable.querySelector("tbody").innerHTML = "<tr><td colspan=\"2\">分析待ち</td></tr>";
+        difficultyTable.querySelector("tbody").innerHTML = "<tr><td colspan=\"2\">分析待ち</td></tr>";
+        resultLinks.innerHTML = "";
+        setError("");
+        Array.from(flowSteps.children).forEach((step) => {
+          const status = step.querySelector(".status");
+          if (status) status.textContent = "待機";
+        });
+      });
+    </script>
+  </body>
+</html>
